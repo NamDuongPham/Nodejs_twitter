@@ -11,22 +11,22 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>) 
   return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     await validation.run(req)
     const errors = validationResult(req)
+    const errorsObject = errors.mapped()
     // Không có lỗi thì next tiếp tục request
     if (errors.isEmpty()) {
       return next()
     }
-    res.status(400).json({ errors: errors.mapped() })
-    //const errorsObject = errors.mapped()
-    // const entityError = new EntityError({ errors: {} })
-    // for (const key in errorsObject) {
-    //   const { msg } = errorsObject[key]
-    //   // Trả về lỗi không phải là lỗi do validate
-    //   if (msg instanceof ErrorWithStatus && msg.status !== HTTP_STATUS.UNPROCESSABLE_ENTITY) {
-    //     return next(msg)
-    //   }
-    //   entityError.errors[key] = errorsObject[key]
-    // }
 
-    // next(entityError)
+    const entityError = new EntityError({ errors: {} })
+    for (const key in errorsObject) {
+      const { msg } = errorsObject[key]
+      // Trả về lỗi không phải là lỗi do validate
+      if (msg instanceof ErrorWithStatus && msg.status !== HTTP_STATUS.UNPROCESSABLE_ENTITY) {
+        return next(msg)
+      }
+      entityError.errors[key] = errorsObject[key]
+    }
+
+    next(entityError)
   }
 }
