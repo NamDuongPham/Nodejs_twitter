@@ -12,11 +12,11 @@
       "~/*": ["src/*"] // Đường dẫn tương đối cho các import (alias)
     },
 
-    "typeRoots": ["./src/types", "./node_modules/@types"]
+    "typeRoots": ["./src/types"]
   },
   "ts-node": {
     "require": ["tsconfig-paths/register"]
   },
-  "files": ["src/routes/users.routes.ts"], // Các file dùng để defined global type cho dự án
-  "include": ["src/**/*", "src/routes/users.routes.ts","src/type.d.ts"] // Đường dẫn include cho các file cần build
+  "files": ["src/type.d.ts"], // Các file dùng để defined global type cho dự án
+  "include": ["src/**/*"] // Đường dẫn include cho các file cần build
 }
