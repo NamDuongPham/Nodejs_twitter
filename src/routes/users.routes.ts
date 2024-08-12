@@ -1,25 +1,37 @@
 import { Router } from 'express'
 import {
+  changePasswordController,
+  followController,
   forgotPasswordController,
   getMeController,
+  getProfileController,
   loginController,
   logoutController,
   registerController,
   resendVerifyEmailController,
   resetPasswordController,
+  unfollowController,
+  updateMeController,
   verifyEmailController,
   verifyForgotPasswordController
 } from '~/controllers/users.controllers'
+import { filterMiddleware } from '~/middlewares/common.middleware'
 import {
   accessTokenValidator,
+  changePasswordValidator,
   emailVerifyTokenValidator,
+  followValidator,
   forgotPasswordValidator,
   loginValidator,
   refreshTokenValidator,
   registerValidator,
   resetPasswordValidator,
+  unfollowValidator,
+  updateMeValidator,
+  verifiedUserValidator,
   verifyForgotPasswordTokenValidator
 } from '~/middlewares/users.middlewares'
+import { UpdateMeReqBody } from '~/models/requests/User.requests'
 import { wrapRequestHandler } from '~/utils/handlers'
 const usersRouter = Router()
 
@@ -73,4 +85,69 @@ usersRouter.post('/reset-password', resetPasswordValidator, wrapRequestHandler(r
 // Method : GET
 // Header:{authorization : Bearer <access_token>}
 usersRouter.get('/me', accessTokenValidator, wrapRequestHandler(getMeController))
+// Description: Update my profile
+// path: /me
+// Method : GET
+// Header:{authorization : Bearer <access_token>}
+// Body:{UserChema}
+usersRouter.patch(
+  '/me',
+  accessTokenValidator,
+  verifiedUserValidator,
+  updateMeValidator,
+  filterMiddleware<UpdateMeReqBody>([
+    'name',
+    'date_of_birth',
+    'bio',
+    'location',
+    'website',
+    'username',
+    'avatar',
+    'cover_photo'
+  ]),
+  wrapRequestHandler(updateMeController)
+)
+// Description: Get user profile
+// path: /:username
+// Method : GET
+usersRouter.get('/:username', wrapRequestHandler(getProfileController))
+// Description: Follow user
+// path: /follow
+// Method : POST
+// Header:{authorization : Bearer <access_token>}
+// Body : {followed_user_id:string}
+usersRouter.post(
+  '/follow',
+  accessTokenValidator,
+  verifiedUserValidator,
+  followValidator,
+  wrapRequestHandler(followController)
+)
+// Description: Follow user
+// path: /follow/user_id
+// Method : DELETE
+// Header:{authorization : Bearer <access_token>}
+// Body : {followed_user_id:string}
+usersRouter.delete(
+  '/follow/:user_id',
+  accessTokenValidator,
+  verifiedUserValidator,
+  unfollowValidator,
+  wrapRequestHandler(unfollowController)
+)
+/**
+ * Description: Change password
+ * Path: /change-password
+ * Method: PUT
+ * Header: { Authorization: Bearer <access_token> }
+ * Body: { old_password: string, password: string, confirm_password: string }
+ */
+usersRouter.put(
+  '/change-password',
+  accessTokenValidator,
+  verifiedUserValidator,
+  changePasswordValidator,
+  wrapRequestHandler(changePasswordController)
+)
+
 export default usersRouter
