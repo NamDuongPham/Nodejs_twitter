@@ -1,3 +1,4 @@
+import agrv from 'minimist'
 // import { config } from 'dotenv'
 // import fs from 'fs'
 // import path from 'path'
@@ -55,3 +56,6 @@
 //   sesFromAddress: process.env.SES_FROM_ADDRESS as string,
 //   s3BucketName: process.env.S3_BUCKET_NAME as string
 // }
+const option = agrv(process.argv.slice(2))
+
+export const isProduction = Boolean(option.production)
