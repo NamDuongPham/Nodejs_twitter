@@ -407,6 +407,7 @@ export const resetPasswordValidator = validate(
 export const verifiedUserValidator = (req: Request, res: Response, next: NextFunction) => {
   const { verify } = req.decoded_authorization as TokenPayload
   if (verify !== UserVerifyStatus.Verified) {
+    // console.log(verify)
     return next(
       new ErrorWithStatus({
         message: USERS_MESSAGES.USER_NOT_VERIFIED,
