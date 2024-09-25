@@ -8,6 +8,7 @@ import databaseService from './services/database.services'
 import { initFolder } from './utils/file'
 import staticRouter from './routes/static.routes'
 import tweetsRouter from './routes/tweets.routes'
+import bookmarksRouter from './routes/bookmarks.routes'
 config()
 databaseService.connect().then(() => {
   databaseService.indexUsers()
@@ -25,6 +26,7 @@ app.use('static', staticRouter)
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
 app.use('/tweets', tweetsRouter)
+app.use('/bookmarks', bookmarksRouter)
 app.use(defaultErrorHandler)
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
