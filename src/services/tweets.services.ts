@@ -196,13 +196,15 @@ class TweetService {
         }
       ])
       .toArray()
-    const ids = tweets.map((tweet: Tweet) => tweet._id as ObjectId)
+    const ids = tweets.map((tweet) => tweet._id as ObjectId)
     const inc = user_id ? { user_views: 1 } : { guest_views: 1 }
     const date = new Date()
     const [, total] = await Promise.all([
       databaseService.tweets.updateMany(
         {
-          _id: { $in: ids }
+          _id: {
+            $in: ids
+          }
         },
         {
           $inc: inc,
@@ -216,6 +218,7 @@ class TweetService {
         type: tweet_type
       })
     ])
+
     tweets.forEach((tweet) => {
       tweet.updated_at = date
       if (user_id) {
