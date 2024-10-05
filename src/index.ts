@@ -18,6 +18,7 @@ databaseService.connect().then(() => {
   databaseService.indexRefreshTokens()
   databaseService.indexVideoStatus()
   databaseService.indexFollowers()
+  databaseService.indexTweets()
 })
 const app = express()
 const port = process.env.PORT || 4000
