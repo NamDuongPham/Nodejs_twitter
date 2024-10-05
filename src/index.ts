@@ -10,6 +10,7 @@ import staticRouter from './routes/static.routes'
 import tweetsRouter from './routes/tweets.routes'
 import bookmarksRouter from './routes/bookmarks.routes'
 import likesRouter from './routes/likes.routes'
+import searchRouter from './routes/search.routes'
 // import '~/utils/fake'
 config()
 databaseService.connect().then(() => {
@@ -30,6 +31,7 @@ app.use('/medias', mediasRouter)
 app.use('/tweets', tweetsRouter)
 app.use('/bookmarks', bookmarksRouter)
 app.use('/likes', likesRouter)
+app.use('/search', searchRouter)
 app.use(defaultErrorHandler)
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
