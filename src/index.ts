@@ -14,6 +14,7 @@ import searchRouter from './routes/search.routes'
 // import '~/utils/fake'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
+import cors from 'cors'
 config()
 databaseService.connect().then(() => {
   databaseService.indexUsers()
@@ -28,6 +29,11 @@ const port = process.env.PORT || 4000
 
 // Tạo folder uploads
 initFolder()
+app.use(
+  cors({
+    origin: 'http://localhost:3000'
+  })
+)
 app.use(express.json())
 app.use('static', staticRouter)
 app.use('/users', usersRouter)
@@ -40,12 +46,22 @@ app.use(defaultErrorHandler)
 
 const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:3000'
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST']
   }
 })
 
 io.on('connection', (socket) => {
-  console.log(`${socket.id} conneted`)
+  console.log(`user ${socket.id} conneted`)
+  socket.on('disconent', () => {
+    console.log(`user ${socket.id} disconent`)
+  })
+  socket.emit('hi', {
+    message: `Hi client đã kết nối thành công`
+  })
+  socket.on('hello server', (agr) => {
+    console.log(agr)
+  })
 })
 httpServer.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
