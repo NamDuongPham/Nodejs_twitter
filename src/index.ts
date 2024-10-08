@@ -12,6 +12,8 @@ import bookmarksRouter from './routes/bookmarks.routes'
 import likesRouter from './routes/likes.routes'
 import searchRouter from './routes/search.routes'
 // import '~/utils/fake'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
 config()
 databaseService.connect().then(() => {
   databaseService.indexUsers()
@@ -21,6 +23,7 @@ databaseService.connect().then(() => {
   databaseService.indexTweets()
 })
 const app = express()
+const httpServer = createServer(app)
 const port = process.env.PORT || 4000
 
 // Tạo folder uploads
@@ -34,6 +37,16 @@ app.use('/bookmarks', bookmarksRouter)
 app.use('/likes', likesRouter)
 app.use('/search', searchRouter)
 app.use(defaultErrorHandler)
-app.listen(port, () => {
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: 'http://localhost:3000'
+  }
+})
+
+io.on('connection', (socket) => {
+  console.log(`${socket.id} conneted`)
+})
+httpServer.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
