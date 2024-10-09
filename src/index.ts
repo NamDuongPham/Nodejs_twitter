@@ -50,17 +50,30 @@ const io = new Server(httpServer, {
     methods: ['GET', 'POST']
   }
 })
-
+const users: {
+  [key: string]: {
+    socket_id: string
+  }
+} = {}
 io.on('connection', (socket) => {
   console.log(`user ${socket.id} conneted`)
+  // console.log(socket.handshake.auth)
+  const user_id = socket.handshake.auth._id
+  users[user_id] = {
+    socket_id: socket.id
+  }
+  console.log(users)
+  socket.on('private message', (data) => {
+    const receiver_socket_id = users[data.to].socket_id
+    socket.to(receiver_socket_id).emit('receive private message', {
+      content: data.content,
+      from: user_id
+    })
+  })
   socket.on('disconent', () => {
+    delete users[user_id]
     console.log(`user ${socket.id} disconent`)
-  })
-  socket.emit('hi', {
-    message: `Hi client đã kết nối thành công`
-  })
-  socket.on('hello server', (agr) => {
-    console.log(agr)
+    console.log(users)
   })
 })
 httpServer.listen(port, () => {
