@@ -16,6 +16,8 @@ import { createServer } from 'http'
 import { Server } from 'socket.io'
 import cors from 'cors'
 import Conversation from './models/schemas/Conversations.schema'
+import conversationsRouter from './routes/conversations.routes'
+import { ObjectId } from 'mongodb'
 config()
 databaseService.connect().then(() => {
   databaseService.indexUsers()
@@ -43,6 +45,7 @@ app.use('/tweets', tweetsRouter)
 app.use('/bookmarks', bookmarksRouter)
 app.use('/likes', likesRouter)
 app.use('/search', searchRouter)
+app.use('/conversations', conversationsRouter)
 app.use(defaultErrorHandler)
 
 const io = new Server(httpServer, {
@@ -57,7 +60,7 @@ const users: {
   }
 } = {}
 io.on('connection', (socket) => {
-  console.log(`user ${socket.id} conneted`)
+  console.log(`user ${socket.id} connected`)
   // console.log(socket.handshake.auth)
   const user_id = socket.handshake.auth._id
   users[user_id] = {
@@ -65,20 +68,25 @@ io.on('connection', (socket) => {
   }
   console.log(users)
   socket.on('private message', async (data) => {
+    console.log(data)
+
     const receiver_socket_id = users[data.to]?.socket_id
+    console.log('receiver_socket_id', receiver_socket_id)
+
     if (!receiver_socket_id) {
       return
     }
     await databaseService.conversations.insertOne(
       new Conversation({
-        sender_id: data.from,
-        receiver_id: data.to,
+        sender_id: new ObjectId(data.from as string),
+        receiver_id: new ObjectId(data.to as string),
         content: data.content
       })
     )
     socket.to(receiver_socket_id).emit('receive private message', {
       content: data.content,
-      from: user_id
+      from: user_id,
+      to: data.to
     })
   })
   socket.on('disconent', () => {
