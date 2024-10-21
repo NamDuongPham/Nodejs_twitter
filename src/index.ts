@@ -59,25 +59,31 @@ const users: {
     socket_id: string
   }
 } = {}
+
 io.on('connection', (socket) => {
-  console.log(`user ${socket.id} connected`)
-  // console.log(socket.handshake.auth)
+  // console.log(socket.handshake.auth._id)
   const user_id = socket.handshake.auth._id
+
+  console.log(`user ${socket.id} connected`)
   users[user_id] = {
     socket_id: socket.id
   }
-  console.log(users)
+  console.log('Đối tượng users đã cập nhật:', users)
   socket.on('send_message', async (data) => {
+    // console.log(data.payload)
+
     const { receiver_id, sender_id, content } = data.payload
+
+    console.log('Gửi tin nhắn từ', sender_id, 'đến', receiver_id)
     const receiver_socket_id = users[receiver_id]?.socket_id
-    console.log('receiver_socket_id', receiver_socket_id)
 
     if (!receiver_socket_id) {
+      console.log('Người nhận không online:', receiver_id)
       return
     }
     const conversation = new Conversation({
-      sender_id: new ObjectId(sender_id),
-      receiver_id: new ObjectId(receiver_id),
+      sender_id: new ObjectId(sender_id as string),
+      receiver_id: new ObjectId(receiver_id as string),
       content: content
     })
     const result = await databaseService.conversations.insertOne(conversation)
@@ -89,8 +95,8 @@ io.on('connection', (socket) => {
   })
   socket.on('disconent', () => {
     delete users[user_id]
-    console.log(`user ${socket.id} disconent`)
-    console.log(users)
+    console.log(`Người dùng ${user_id} (${socket.id}) đã ngắt kết nối`)
+    console.log('Đối tượng users đã cập nhật:', users)
   })
 })
 httpServer.listen(port, () => {
