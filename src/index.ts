@@ -1,3 +1,4 @@
+import { verifyAccessToken } from '~/utils/commons'
 import { config } from 'dotenv'
 import express from 'express'
 import { UPLOAD_IMAGE_TEMP_DIR } from './constants/dir'
@@ -18,6 +19,11 @@ import cors from 'cors'
 import Conversation from './models/schemas/Conversations.schema'
 import conversationsRouter from './routes/conversations.routes'
 import { ObjectId } from 'mongodb'
+import { ErrorWithStatus } from './models/Errors'
+import { USERS_MESSAGES } from './constants/messages'
+import HTTP_STATUS from './constants/httpStatus'
+import { UserVerifyStatus } from './constants/enums'
+import { TokenPayload } from './models/requests/User.requests'
 config()
 databaseService.connect().then(() => {
   databaseService.indexUsers()
@@ -59,7 +65,30 @@ const users: {
     socket_id: string
   }
 } = {}
-
+io.use(async (socket, next) => {
+  const Authorization = socket.handshake.auth.Authorization
+  const access_token = Authorization?.split(' ')[1]
+  try {
+    const decoded_authorization = await verifyAccessToken(access_token)
+    const { verify } = decoded_authorization as TokenPayload
+    if (verify !== UserVerifyStatus.Verified) {
+      throw new ErrorWithStatus({
+        message: USERS_MESSAGES.USER_NOT_VERIFIED,
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    }
+    // Truyền decoded_authorization vào socket để sử dụng ở các middleware khác
+    socket.handshake.auth.decoded_authorization = decoded_authorization
+    socket.handshake.auth.access_token = access_token
+    next()
+  } catch (error) {
+    next({
+      message: 'Unauthorized',
+      name: 'UnauthorizedError',
+      data: error
+    })
+  }
+})
 io.on('connection', (socket) => {
   // console.log(socket.handshake.auth._id)
   const user_id = socket.handshake.auth._id
@@ -74,7 +103,7 @@ io.on('connection', (socket) => {
 
     const { receiver_id, sender_id, content } = data.payload
 
-    console.log('Gửi tin nhắn từ', sender_id, 'đến', receiver_id)
+    // console.log('Gửi tin nhắn từ', sender_id, 'đến', receiver_id)
     const receiver_socket_id = users[receiver_id]?.socket_id
 
     if (!receiver_socket_id) {
@@ -96,7 +125,7 @@ io.on('connection', (socket) => {
   socket.on('disconent', () => {
     delete users[user_id]
     console.log(`Người dùng ${user_id} (${socket.id}) đã ngắt kết nối`)
-    console.log('Đối tượng users đã cập nhật:', users)
+    // console.log('Đối tượng users đã cập nhật:', users)
   })
 })
 httpServer.listen(port, () => {

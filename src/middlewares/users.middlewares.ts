@@ -14,6 +14,7 @@ import { ObjectId } from 'mongodb'
 import { TokenPayload } from '~/models/requests/User.requests'
 import { UserVerifyStatus } from '~/constants/enums'
 import { REGEX_USERNAME } from '~/constants/regex'
+import { verifyAccessToken } from '~/utils/commons'
 const passwordSchema: ParamSchema = {
   notEmpty: {
     errorMessage: USERS_MESSAGES.PASSWORD_IS_REQUIRED
@@ -266,19 +267,7 @@ export const accessTokenValidator = validate(
         custom: {
           options: async (value: string, { req }) => {
             const access_token = value.split(' ')[1]
-            if (!access_token) {
-              throw new ErrorWithStatus({
-                message: USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
-                status: HTTP_STATUS.UNAUTHORIZED
-              })
-            }
-            const decoded_authorization = await verifyToken({
-              token: access_token,
-              secretOrPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN as string
-            })
-
-            ;(req as Request).decoded_authorization = decoded_authorization
-            return true
+            return await verifyAccessToken(access_token, req as Request)
           }
         }
       }
