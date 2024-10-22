@@ -12,6 +12,7 @@ import RefreshToken from '~/models/schemas/RefreshToken.shema'
 import { hashPassword } from '~/utils/crypto'
 import { signToken, verifyToken } from '~/utils/jwt'
 import databaseService from './database.services'
+import { sendVerifyRegisterEmail } from '~/utils/email'
 class UsersService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return signToken({
@@ -91,6 +92,13 @@ class UsersService {
     await databaseService.refreshTokens.insertOne(
       new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token, iat, exp })
     )
+    //Flow verify email
+    // 1. Server send email to user
+    // 2. User click link in email
+    // 3. Client send request with email_verify_token
+    // 4. Server verify email_verify_token
+    // 5. Client receive access_token and refresh_token
+    await sendVerifyRegisterEmail(payload.email, email_verify_token)
     return {
       access_token,
       refresh_token
