@@ -12,6 +12,9 @@ import { Media } from '~/models/Other'
 import fsPromise from 'fs/promises'
 import databaseService from './database.services'
 import VideoStatus from '~/models/schemas/VideoStatus.schema'
+import { uploadFileTos3 } from '~/utils/s3'
+import { CompleteMultipartUploadCommandOutput } from '@aws-sdk/client-s3'
+import mime from 'mime'
 config()
 class Queue {
   items: string[]
@@ -105,13 +108,15 @@ class MediasService {
         const newName = getNameFromFullname(file.newFilename)
         const newFullFilename = `${newName}.jpg`
         const newPath = path.resolve(UPLOAD_IMAGE_DIR, newFullFilename)
-
-        sharp(file.filepath).jpeg({ quality: 100 }).toFile(newPath)
-        fs.unlinkSync(file.filepath)
+        await sharp(file.filepath).jpeg().toFile(newPath)
+        const s3Result = await uploadFileTos3({
+          filename: 'images/' + newFullFilename,
+          filepath: newPath,
+          contentType: mime.getType(newFullFilename) as string
+        })
+        await Promise.all([fsPromise.unlink(file.filepath), fsPromise.unlink(newPath)])
         return {
-          url: isProduction
-            ? `${process.env.HOST}/static/${newName}.jpg`
-            : `http://localhost:${process.env.PORT}/static/${newName}.jpg`,
+          url: (s3Result as CompleteMultipartUploadCommandOutput).Location as string,
           type: MediaType.Image
         }
       })

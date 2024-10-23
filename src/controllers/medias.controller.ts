@@ -5,7 +5,7 @@ import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGES } from '~/constants/messages'
 import mediasService from '~/services/medias.services'
 import fs from 'fs'
-
+import mime from 'mime'
 export const uploadSingleController = async (req: Request, res: Response, next: NextFunction) => {
   const url = await mediasService.uploadImage(req)
   return res.json({
@@ -58,7 +58,7 @@ export const serveVideoStreamController = (req: Request, res: Response, next: Ne
   // THường đây sẽ là chunkSize, ngoại trừ đoạn cuối cùng
   const contentLength = end - start + 1
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const mime = require('mime')
+
   const contentType = mime.getType(videoPath) || 'video/*'
 
   /**
