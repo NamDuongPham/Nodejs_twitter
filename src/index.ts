@@ -14,6 +14,7 @@ import { initFolder } from './utils/file'
 import conversationsRouter from './routes/conversations.routes'
 import { createServer } from 'http'
 import initSocket from './utils/socket'
+import '~/utils/s3'
 config()
 databaseService.connect().then(() => {
   databaseService.indexUsers()
