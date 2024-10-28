@@ -1,0 +1,165 @@
+openapi: 3.0.3
+info:
+  title: Swagger Twitter - OpenAPI 3.0
+  description: |-
+    This is a sample Twitter Server based on the OpenAPI 3.0 specification.  You can find out more about
+
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: http://localhost:4000
+tags:
+  - name: users
+    description: Operations about user
+paths:
+  /users/login:
+    post:
+      tags:
+        - users
+      summary: Login
+      description: Login to system
+      operationId: login
+      x-swagger-router-controller: users
+      requestBody:
+        description: Login info
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginBoby'
+        required: true
+      responses:
+        '200':
+          description: Login Success
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login success
+                  result:
+                    $ref: '#/components/schemas/SuccessAuthentication'
+        '400':
+          description: Invalid input
+        '422':
+          description: Validation exception
+  /users/me:
+    get:
+      tags:
+        - users
+      summary: Get info user
+      description: Get info user
+      operationId: getMe
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get info user success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Get my profile success
+                $ref: '#/components/schemas/User'
+
+components:
+  schemas:
+    LoginBoby:
+      type: object
+      properties:
+        email:
+          type: string
+          example: namduong@gmail.com
+        password:
+          type: string
+          example: Duong2003!
+    SuccessAuthentication:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjZmMmJhZWQyNDljYzQ3YTdiMTQ5OTA5IiwidG9rZW5fdHlwZSI6MCwidmVyaWZ5IjoxLCJpYXQiOjE3Mjk2NjI1MDUsImV4cCI6MTcyOTc0ODkwNX0.I3IsSHxCb3hnWAEDgYRYRgXb8JoDpg3knqzCOMsOc-E
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjZmMmJhZWQyNDljYzQ3YTdiMTQ5OTA5IiwidG9rZW5fdHlwZSI6MSwidmVyaWZ5IjoxLCJpYXQiOjE3Mjk2NjI1MDUsImV4cCI6MTczODMwMjUwNX0.K79CJfUNxCHgTZppjUiSKBonJsmLSfAMCScmZC9kwzQ
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: '66f8e1577a3f80640fdfe2c0'
+        name:
+          type: string
+          example: 'Admin1'
+        email:
+          type: string
+          example: 'admin1@gmail.com'
+        date_of_birth:
+          type: string
+          format: ISO8601
+          example: 2024-07-19T10:31:31.769Z
+        created_at:
+          type: string
+          format: ISO8601
+          example: 2024-09-29T05:10:47.432Z
+        updated_at:
+          type: string
+          format: ISO8601
+          example: 2024-09-29T05:11:19.925Z
+        verify:
+          $ref: '#/components/schemas/UserVerifyStatus'
+        twitter_circle:
+          type: array
+          items:
+            type: string
+            format: MongoId
+          example: ['66f8e1577a3f80640fdfe2c0', '88f8e1577a3f80640fdfe2b0']
+        bio:
+          type: string
+          example: 'This is my bio'
+        location:
+          type: string
+          example: 'Hồ Chí Minh city'
+        website:
+          type: string
+          example: 'www.example.com'
+        username:
+          type: string
+          example: 'user66f8e1577a3f80640fdfe2c0'
+        avatar:
+          type: string
+          example: 'http://localhost:4000/images/avatars/abc.jpg'
+        cover_photo:
+          type: string
+          example: 'http://localhost:4000/images/avatars/abc.jpg'
+    UserVerifyStatus:
+      type: number
+      enum: [Unverified, Verified, Banned]
+      example: 1
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

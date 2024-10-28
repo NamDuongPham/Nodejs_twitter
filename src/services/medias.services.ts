@@ -2,8 +2,8 @@ import { encodeHLSWithMultipleVideoStreams } from './../utils/video'
 import { Request } from 'express'
 import path from 'path'
 import sharp from 'sharp'
-import { UPLOAD_IMAGE_DIR } from '~/constants/dir'
-import { getNameFromFullname, handleUploadImage, handleUploadVideo } from '~/utils/file'
+import { UPLOAD_IMAGE_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
+import { getFiles, getNameFromFullname, handleUploadImage, handleUploadVideo } from '~/utils/file'
 import fs from 'fs'
 import { isProduction } from '~/constants/config'
 import { config } from 'dotenv'
@@ -15,6 +15,7 @@ import VideoStatus from '~/models/schemas/VideoStatus.schema'
 import { uploadFileTos3 } from '~/utils/s3'
 import { CompleteMultipartUploadCommandOutput } from '@aws-sdk/client-s3'
 import mime from 'mime'
+import { rimrafSync } from 'rimraf'
 config()
 class Queue {
   items: string[]
@@ -33,9 +34,9 @@ class Queue {
         status: EncodingStatus.Pending
       })
     )
-    this.proocessEncode()
+    this.processEncode()
   }
-  async proocessEncode() {
+  async processEncode() {
     if (this.encoding) return
     if (this.items.length > 0) {
       this.encoding = true
@@ -57,7 +58,19 @@ class Queue {
       try {
         await encodeHLSWithMultipleVideoStreams(videoPath)
         this.items.shift()
-        await fsPromise.unlink(videoPath)
+        const files = getFiles(path.resolve(UPLOAD_VIDEO_DIR, idName))
+        await Promise.all(
+          files.map((filepath) => {
+            // filepath: /Users/duthanhduoc/Documents/DuocEdu/NodeJs-Super/Twitter/uploads/videos/6vcpA2ujL7EuaD5gvaPvl/v0/fileSequence0.ts
+            const filename = 'videos-hls' + filepath.replace(path.resolve(UPLOAD_VIDEO_DIR), '')
+            return uploadFileTos3({
+              filepath,
+              filename,
+              contentType: mime.getType(filepath) as string
+            })
+          })
+        )
+        rimrafSync(path.resolve(UPLOAD_VIDEO_DIR, idName))
         await databaseService.videoStatus.updateOne(
           {
             name: idName
@@ -71,6 +84,7 @@ class Queue {
             }
           }
         )
+        console.log(`Encode video ${videoPath} success`)
       } catch (error) {
         await databaseService.videoStatus
           .updateOne(
@@ -93,9 +107,9 @@ class Queue {
         console.error(error)
       }
       this.encoding = false
-      this.proocessEncode()
+      this.processEncode()
     } else {
-      console.log('Empty video queue is empty')
+      console.log('Encode video queue is empty')
     }
   }
 }
@@ -157,8 +171,8 @@ class MediasService {
         queue.enqueue(file.filepath)
         return {
           url: isProduction
-            ? `${process.env.HOST}/static/video-hls/${newName}.m3u8`
-            : `http://localhost:${process.env.PORT}/static/video/${newName}.m3u8`,
+            ? `${process.env.HOST}/static/video-hls/${newName}/master.m3u8`
+            : `http://localhost:${process.env.PORT}/static/video/${newName}/master.m3u8`,
           type: MediaType.HLS
         }
       })

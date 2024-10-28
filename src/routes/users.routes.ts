@@ -36,6 +36,7 @@ import {
 import { UpdateMeReqBody } from '~/models/requests/User.requests'
 import { wrapRequestHandler } from '~/utils/handlers'
 const usersRouter = Router()
+
 /**
  * Description. OAuth with Google
  * Path: /oauth/google

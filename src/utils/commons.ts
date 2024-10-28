@@ -19,7 +19,7 @@ export const verifyAccessToken = async (access_token: string, req?: Request) => 
   try {
     const decoded_authorization = await verifyToken({
       token: access_token,
-      secretOrPublicKey: process.env.JWT_SCREET_ACCESS_TOKEN as string
+      secretOrPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN as string
     })
     if (req) {
       ;(req as Request).decoded_authorization = decoded_authorization
