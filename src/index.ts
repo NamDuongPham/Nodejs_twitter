@@ -18,6 +18,7 @@ import swaggerUi from 'swagger-ui-express'
 import '~/utils/s3'
 import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
+import { envConfig } from './constants/config'
 // const file = fs.readFileSync(path.resolve('twitter-swagger.yaml'), 'utf-8')
 // const swaggerDocument = YAML.parse(file)
 const options: swaggerJsdoc.Options = {
@@ -56,7 +57,7 @@ databaseService.connect().then(() => {
 })
 const app = express()
 const httpServer = createServer(app)
-const port = process.env.PORT || 4000
+const port = envConfig.port
 app.use(
   cors({
     origin: '*',

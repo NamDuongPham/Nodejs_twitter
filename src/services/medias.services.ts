@@ -5,7 +5,7 @@ import sharp from 'sharp'
 import { UPLOAD_IMAGE_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
 import { getFiles, getNameFromFullname, handleUploadImage, handleUploadVideo } from '~/utils/file'
 import fs from 'fs'
-import { isProduction } from '~/constants/config'
+import { envConfig, isProduction } from '~/constants/config'
 import { config } from 'dotenv'
 import { EncodingStatus, MediaType } from '~/constants/enums'
 import { Media } from '~/models/Other'
@@ -154,8 +154,8 @@ class MediasService {
         }
         // return {
         //   url: isProduction
-        //     ? `${process.env.HOST}/static/video/${file.newFilename}`
-        //     : `http://localhost:${process.env.PORT}/static/video/${file.newFilename}`,
+        //     ? `${envConfig.host}/static/video/${file.newFilename}`
+        //     : `http://localhost:${envConfig.port}/static/video/${file.newFilename}`,
         //   type: MediaType.Video
         // }
       })
@@ -171,8 +171,8 @@ class MediasService {
         queue.enqueue(file.filepath)
         return {
           url: isProduction
-            ? `${process.env.HOST}/static/video-hls/${newName}/master.m3u8`
-            : `http://localhost:${process.env.PORT}/static/video/${newName}/master.m3u8`,
+            ? `${envConfig.host}/static/video-hls/${newName}/master.m3u8`
+            : `http://localhost:${envConfig.port}/static/video/${newName}/master.m3u8`,
           type: MediaType.HLS
         }
       })
