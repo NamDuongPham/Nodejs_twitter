@@ -20,6 +20,7 @@ import '~/utils/s3'
 import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
 import { envConfig, isProduction } from './constants/config'
+import { rateLimit } from 'express-rate-limit'
 // const file = fs.readFileSync(path.resolve('twitter-swagger.yaml'), 'utf-8')
 // const swaggerDocument = YAML.parse(file)
 const options: swaggerJsdoc.Options = {
@@ -47,7 +48,9 @@ const options: swaggerJsdoc.Options = {
   },
   apis: ['./openapi/*.yaml'] // files containing annotations as above
 }
+
 const openapiSpecification = swaggerJsdoc(options)
+
 config()
 databaseService.connect().then(() => {
   databaseService.indexUsers()
@@ -55,6 +58,13 @@ databaseService.connect().then(() => {
   databaseService.indexVideoStatus()
   databaseService.indexFollowers()
   databaseService.indexTweets()
+})
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false // Disable the `X-RateLimit-*` headers
+  // store: ... , // Use an external store for more precise rate limiting
 })
 const app = express()
 const httpServer = createServer(app)
@@ -71,6 +81,7 @@ app.use(
 // Tạo folder uploads
 initFolder()
 app.use(helmet())
+app.use(limiter)
 app.use(express.json())
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification))
 app.use('static', staticRouter)
