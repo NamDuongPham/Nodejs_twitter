@@ -10,6 +10,7 @@ import tweetsRouter from './routes/tweets.routes'
 import usersRouter from './routes/users.routes'
 import databaseService from './services/database.services'
 import { initFolder } from './utils/file'
+import helmet from 'helmet'
 // import '~/utils/fake'
 import cors from 'cors'
 import { createServer } from 'http'
@@ -18,7 +19,7 @@ import swaggerUi from 'swagger-ui-express'
 import '~/utils/s3'
 import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
-import { envConfig } from './constants/config'
+import { envConfig, isProduction } from './constants/config'
 // const file = fs.readFileSync(path.resolve('twitter-swagger.yaml'), 'utf-8')
 // const swaggerDocument = YAML.parse(file)
 const options: swaggerJsdoc.Options = {
@@ -60,7 +61,7 @@ const httpServer = createServer(app)
 const port = envConfig.port
 app.use(
   cors({
-    origin: '*',
+    origin: isProduction ? envConfig.clientUrl : '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token', 'Origin', 'Accept'],
     exposedHeaders: ['Authorization'],
@@ -69,7 +70,7 @@ app.use(
 )
 // Tạo folder uploads
 initFolder()
-
+app.use(helmet())
 app.use(express.json())
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification))
 app.use('static', staticRouter)
