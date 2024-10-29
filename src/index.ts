@@ -1,5 +1,5 @@
-import { config } from 'dotenv'
 import express from 'express'
+import helmet from 'helmet'
 import { defaultErrorHandler } from './middlewares/error.middleware'
 import bookmarksRouter from './routes/bookmarks.routes'
 import likesRouter from './routes/likes.routes'
@@ -10,17 +10,16 @@ import tweetsRouter from './routes/tweets.routes'
 import usersRouter from './routes/users.routes'
 import databaseService from './services/database.services'
 import { initFolder } from './utils/file'
-import helmet from 'helmet'
 // import '~/utils/fake'
 import cors from 'cors'
+import { rateLimit } from 'express-rate-limit'
 import { createServer } from 'http'
 import swaggerJsdoc from 'swagger-jsdoc'
 import swaggerUi from 'swagger-ui-express'
 import '~/utils/s3'
+import { envConfig, isProduction } from './constants/config'
 import conversationsRouter from './routes/conversations.routes'
 import initSocket from './utils/socket'
-import { envConfig, isProduction } from './constants/config'
-import { rateLimit } from 'express-rate-limit'
 // const file = fs.readFileSync(path.resolve('twitter-swagger.yaml'), 'utf-8')
 // const swaggerDocument = YAML.parse(file)
 const options: swaggerJsdoc.Options = {
@@ -51,7 +50,6 @@ const options: swaggerJsdoc.Options = {
 
 const openapiSpecification = swaggerJsdoc(options)
 
-config()
 databaseService.connect().then(() => {
   databaseService.indexUsers()
   databaseService.indexRefreshTokens()
