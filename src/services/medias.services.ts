@@ -1,21 +1,19 @@
-import { encodeHLSWithMultipleVideoStreams } from './../utils/video'
-import { Request } from 'express'
-import path from 'path'
-import sharp from 'sharp'
-import { UPLOAD_IMAGE_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
-import { getFiles, getNameFromFullname, handleUploadImage, handleUploadVideo } from '~/utils/file'
-import fs from 'fs'
-import { envConfig, isProduction } from '~/constants/config'
+import { CompleteMultipartUploadCommandOutput } from '@aws-sdk/client-s3'
 import { config } from 'dotenv'
+import { Request } from 'express'
+import fsPromise from 'fs/promises'
+import path from 'path'
+import { rimrafSync } from 'rimraf'
+import sharp from 'sharp'
+import { envConfig, isProduction } from '~/constants/config'
+import { UPLOAD_IMAGE_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
 import { EncodingStatus, MediaType } from '~/constants/enums'
 import { Media } from '~/models/Other'
-import fsPromise from 'fs/promises'
-import databaseService from './database.services'
 import VideoStatus from '~/models/schemas/VideoStatus.schema'
+import { getFiles, getNameFromFullname, handleUploadImage, handleUploadVideo } from '~/utils/file'
 import { uploadFileTos3 } from '~/utils/s3'
-import { CompleteMultipartUploadCommandOutput } from '@aws-sdk/client-s3'
-import mime from 'mime'
-import { rimrafSync } from 'rimraf'
+import { encodeHLSWithMultipleVideoStreams } from './../utils/video'
+import databaseService from './database.services'
 config()
 class Queue {
   items: string[]
@@ -66,7 +64,7 @@ class Queue {
             return uploadFileTos3({
               filepath,
               filename,
-              contentType: mime.getType(filepath) as string
+              contentType: 'application/octet-stream'
             })
           })
         )
@@ -126,7 +124,7 @@ class MediasService {
         const s3Result = await uploadFileTos3({
           filename: 'images/' + newFullFilename,
           filepath: newPath,
-          contentType: mime.getType(newFullFilename) as string
+          contentType: 'application/octet-stream'
         })
         await Promise.all([fsPromise.unlink(file.filepath), fsPromise.unlink(newPath)])
         return {
@@ -144,7 +142,7 @@ class MediasService {
       files.map(async (file) => {
         const s3Result = await uploadFileTos3({
           filename: 'videos/' + file.newFilename,
-          contentType: mime.getType(file.filepath) as string,
+          contentType: 'application/octet-stream',
           filepath: file.filepath
         })
         fsPromise.unlink(file.filepath)

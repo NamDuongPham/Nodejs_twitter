@@ -1,11 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
+import fs from 'fs'
 import path from 'path'
 import { UPLOAD_IMAGE_DIR, UPLOAD_VIDEO_DIR } from '~/constants/dir'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGES } from '~/constants/messages'
 import mediasService from '~/services/medias.services'
-import fs from 'fs'
-import mime from 'mime'
 export const uploadSingleController = async (req: Request, res: Response, next: NextFunction) => {
   const url = await mediasService.uploadImage(req)
   return res.json({
@@ -59,7 +58,7 @@ export const serveVideoStreamController = (req: Request, res: Response, next: Ne
   const contentLength = end - start + 1
   // eslint-disable-next-line @typescript-eslint/no-var-requires
 
-  const contentType = mime.getType(videoPath) || 'video/*'
+  // const contentType = mime.getType(videoPath) || 'video/*'
 
   /**
    * Format của header Content-Range: bytes <start>-<end>/<videoSize>
@@ -83,7 +82,7 @@ export const serveVideoStreamController = (req: Request, res: Response, next: Ne
     'Content-Range': `bytes ${start}-${end}/${videoSize}`,
     'Accept-Ranges': 'bytes',
     'Content-Length': contentLength,
-    'Content-Type': contentType
+    'Content-Type': 'video/*'
   }
   res.writeHead(HTTP_STATUS.PARTIAL_CONTENT, headers)
   const videoSteams = fs.createReadStream(videoPath, { start, end })

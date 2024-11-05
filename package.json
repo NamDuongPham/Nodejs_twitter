@@ -58,7 +58,6 @@
     "i": "^0.3.7",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
-    "mime": "^2.4.4",
     "minimist": "^1.2.8",
     "mongodb": "^6.3.0",
     "nanoid": "^5.0.7",
