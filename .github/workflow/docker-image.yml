@@ -16,7 +16,7 @@ jobs:
       - name: Build the Docker image
         run: docker build --progress=plain -t namduong0606/twitter:v4 .
       - name: Log in to Docker Hub
-        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Push the Docker image
         run: docker push namduong0606/twitter:v4
 
