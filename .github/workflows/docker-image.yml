@@ -17,6 +17,6 @@ jobs:
       - name: Build the Docker image
         run: docker build --progress=plain -t namduong0606/twitter:v1 .
       - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin # Sử dụng --password-stdin
+        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Push the Docker image
         run: docker push namduong0606/twitter:v1
