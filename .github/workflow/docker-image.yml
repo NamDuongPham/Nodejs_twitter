@@ -14,11 +14,11 @@ jobs:
       - name: 'Create env file'
         run: echo "${{ secrets.TWITTER_ENV_PRODUCTION }}" > .env.production
       - name: Build the Docker image
-        run: docker build --progress=plain -t namduong0606/twitter:latest .
+        run: docker build --progress=plain -t namduong0606/twitter:v4 .
       - name: Log in to Docker Hub
         run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Push the Docker image
-        run: docker push namduong0606/twitter:latest
+        run: docker push namduong0606/twitter:v4
 
   deploy:
     runs-on: ubuntu-latest
@@ -33,7 +33,7 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
-            docker pull namduong0606/twitter:latest
+            docker pull namduong0606/twitter:v4
             docker stop twitter-clone
             docker rm twitter-clone
             docker run -dp 4000:4000 --name twitter-clone --restart unless-stopped
