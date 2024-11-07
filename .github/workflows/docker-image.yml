@@ -32,4 +32,4 @@ jobs:
         run: docker rm -f twitter-container
 
       - name: Run docker container
-        run: docker run -d -p 4173:4173 --name twitter-container namduong0606/twitter:latest
+        run: docker run -d -p 4000:4000 --name twitter-container namduong0606/twitter:latest
