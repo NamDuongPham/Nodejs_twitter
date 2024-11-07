@@ -35,6 +35,6 @@ jobs:
           script: |
             docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
             docker pull namduong0606/twitter:latest
-            docker stop twitter-clone
-            docker rm twitter-clone
+            docker stop twitter-clone || true
+            docker rm twitter-clone || true
             docker run -dp 4000:4000 --name twitter-clone --restart unless-stopped -v ~/twitter-clone/uploads:/app/uploads namduong0606/twitter:latest
